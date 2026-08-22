@@ -37,16 +37,21 @@ class MyModel(nn.Module):
 
 表示创建一个继承自 `nn.Module` 的神经网络类。
 
-`nn.Module` 提供：
+`nn.Module` 主要负责：
 
-- 参数管理
-    
-- 自动梯度支持
-    
-- `model(x)`调用机制
-    
+- 组织神经网络的各个层和子模块
+- 自动注册并管理模型参数，例如 `weight` 和 `bias`
+- 提供 `model.parameters()` 获取需要训练的参数
+- 提供 `model.train()` 和 `model.eval()` 切换训练/评估状态
+- 提供 `model(x)` 的调用机制，最终执行 `forward(x)`
 
----
+注意：
+
+`nn.Module` 本身不是负责自动求导的核心机制。
+
+PyTorch 的自动求导主要由 **autograd（automatic differentiation，自动微分）机制**完成，Tensor 是参与这一机制的核心对象。
+
+`loss.backward()` 会沿着计算图反向计算梯度，并把需要求梯度的叶子 Tensor 的梯度累积到 `.grad` 中；对模型参数来说，就是例如 `weight.grad` 和 `bias.grad`。
 
 ## `__init__`
 
