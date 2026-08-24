@@ -1,5 +1,5 @@
 
-# Day2_pytorch_basics
+# 2_pytorch_basics
 
 ## 1. PyTorch训练整体逻辑
 
@@ -434,3 +434,549 @@ optimizer.step()
 ↓
 更新weight/bias
 ```
+
+# 11. Embedding（嵌入层）
+
+## 11.1 embedding 的含义
+
+`embedding`
+
+中文：嵌入
+
+在深度学习中通常指：
+
+> 将离散的对象转换成连续的向量表示。
+
+神经网络不能直接理解文字、基因等离散对象，因此需要先转换成数字表示。
+
+例如：
+
+```text
+cat
+
+↓
+
+token ID = 5
+
+↓
+
+Embedding
+
+↓
+
+[0.2, 0.5, -0.3, ...]
+````
+
+其中：
+
+```text
+token ID
+```
+
+只是编号：
+
+```text
+cat → 5
+dog → 8
+```
+
+数字本身没有大小关系。
+
+Embedding 的作用是：
+
+> 学习一个能够表示对象特征的向量。
+
+---
+
+# 11.2 nn.Embedding()
+
+PyTorch 提供：
+
+```python
+nn.Embedding(num_embeddings, embedding_dim)
+```
+
+例如：
+
+```python
+embedding = nn.Embedding(10000, 200)
+```
+
+表示：
+
+```text
+10000
+=
+共有10000个离散对象(token)
+
+200
+=
+每个对象用200维向量表示
+```
+
+内部可以理解为一个可学习矩阵：
+
+```text
+10000 × 200
+```
+
+其中：
+
+- 每一行对应一个 token
+    
+- 每一行是该 token 的 embedding vector
+    
+
+例如：
+
+```text
+Embedding Matrix
+
+        dim1   dim2   dim3
+
+cat     0.2    0.5    0.8
+
+dog     0.1    0.7    0.4
+
+fish    0.9    0.3    0.2
+```
+
+输入：
+
+```python
+token_id = 0
+```
+
+实际上就是：
+
+> 查找 Embedding Matrix 第 0 行。
+
+输出：
+
+```text
+[0.2,0.5,0.8]
+```
+
+---
+
+# 11.3 embedding 在生物信息学中的对应
+
+NLP 中：
+
+```text
+word
+
+↓
+
+word embedding
+```
+
+生物数据中：
+
+```text
+gene
+
+↓
+
+gene embedding
+```
+
+例如：
+
+```text
+CD3D
+
+↓
+
+gene ID
+
+↓
+
+gene embedding
+```
+
+因此：
+
+scGPT、Geneformer 等模型中，也会使用类似：
+
+```text
+gene token
+↓
+
+embedding
+
+↓
+
+Transformer
+```
+
+的流程。
+
+---
+
+# 12. Tensor shape 思维
+
+阅读深度学习代码时，需要持续关注：
+
+> Tensor 的 shape 如何变化。
+
+因为不同模型中，每个维度代表不同含义。
+
+# 12.1 CNN 中的 shape
+
+图像输入通常：
+
+```text
+(batch, channel, height, width)
+```
+
+例如：
+
+```python
+x.shape = [32, 1, 28, 28]
+```
+
+表示：
+
+```text
+32
+=
+batch size
+
+1
+=
+channel
+
+28
+=
+height
+
+28
+=
+width
+```
+
+CNN 中，阅读代码时需要关注：
+
+```text
+输入shape
+
+↓
+
+经过卷积/池化
+
+↓
+
+输出shape
+```
+
+如何变化。
+
+# 12.2 序列模型中的 shape
+
+文本、基因序列等数据通常包含：
+
+```text
+sequence length
+batch size
+embedding dimension
+```
+
+例如：
+
+token ID：
+
+```text
+[35, 20]
+```
+
+表示：
+
+```text
+35
+=
+sequence length
+
+20
+=
+batch size
+```
+
+经过 Embedding：
+
+```text
+[35,20,200]
+```
+
+表示：
+
+```text
+35
+=
+sequence length
+
+20
+=
+batch size
+
+200
+=
+embedding dimension
+```
+
+即：
+
+```text
+token ID Tensor
+
+↓
+
+Embedding
+
+↓
+
+(sequence length, batch size, embedding dimension)
+```
+
+不同项目也可能使用：
+
+```text
+(batch size, sequence length, embedding dimension)
+```
+
+因此不能只记固定顺序，需要结合代码判断每个维度的意义。
+
+---
+
+# 12.3 为什么 shape 思维重要？
+
+例如：
+
+```python
+x = self.embedding(input)
+```
+
+不能只知道：
+
+> 做了 embedding。
+
+还需要知道：
+
+输入：
+
+```text
+什么shape？
+
+↓
+
+输出：
+
+什么shape？
+```
+
+因为下一层：
+
+```python
+self.rnn(x)
+```
+
+或者：
+
+```python
+self.transformer(x)
+```
+
+需要匹配特定输入格式。
+
+---
+
+# 13. Dropout（随机失活）
+
+## 13.1 Dropout 的作用
+
+Dropout：是一种正则化方法，用于减少模型过拟合。
+
+训练过程中：
+
+随机将部分神经元输出设置为 0。
+
+例如：
+
+原始向量：
+
+```text
+[0.2, 0.5, 0.8, 0.1]
+```
+
+经过 Dropout：
+
+```text
+[0.2, 0, 0.8, 0]
+```
+
+---
+
+# 13.2 为什么需要 Dropout？
+
+如果模型长期依赖某些特征：
+
+例如：
+
+```text
+某几个神经元
+
+↓
+
+预测结果
+```
+
+模型可能学习到过于简单的规律。
+
+Dropout 会随机关闭部分神经元：
+
+```text
+训练过程中：
+
+这次不用这个特征
+
+下一次不用另一个特征
+```
+
+迫使模型学习更加稳定的表示。
+
+---
+
+# 13.3 nn.Dropout()
+
+PyTorch：
+
+```python
+self.dropout = nn.Dropout(p=0.5)
+```
+
+其中：
+
+```text
+p
+=
+dropout probability
+=
+丢弃概率
+```
+
+例如：
+
+```python
+p=0.5
+```
+
+表示：
+
+训练时约一半神经元会被随机关闭。
+
+注意：
+
+Dropout 只在训练模式启用：
+
+```python
+model.train()
+```
+
+启用。
+
+推理时：
+
+```python
+model.eval()
+```
+
+关闭。
+
+---
+
+# 14. 从真实代码理解数据流
+
+例如：
+
+```python
+emb = self.drop(self.encoder(input))
+```
+
+执行顺序：
+
+从内向外：
+
+```text
+self.encoder(input)
+
+↓
+
+self.drop()
+
+↓
+
+emb
+```
+
+---
+
+第一步：
+
+```python
+self.encoder(input)
+```
+
+如果：
+
+```python
+self.encoder = nn.Embedding(...)
+```
+
+则：
+
+```text
+token ID
+
+↓
+
+Embedding
+
+↓
+
+embedding vector
+```
+
+第二步：
+
+```python
+self.drop()
+```
+
+对 embedding 结果进行 Dropout。
+
+最终：
+
+```text
+input
+
+(token ID)
+
+↓
+
+Embedding
+
+↓
+
+embedding vector
+
+↓
+
+Dropout
+
+↓
+
+emb
+```
+
+
+持续更新中...

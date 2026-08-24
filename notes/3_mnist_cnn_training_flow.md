@@ -1,4 +1,4 @@
-# Day3_mnist_cnn_training_flow
+# 3_mnist_cnn_training_flow
 
 ## 1. Overall execution flow
 
