@@ -1,5 +1,5 @@
 
-# 2_pytorch_basics
+# 2. pytorch_basics
 
 ## 1. PyTorch训练整体逻辑
 

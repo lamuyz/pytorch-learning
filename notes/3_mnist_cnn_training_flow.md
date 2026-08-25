@@ -1,4 +1,4 @@
-# 3_mnist_cnn_training_flow
+# 3. mnist_cnn_training_flow
 
 ## 1. Overall execution flow
 

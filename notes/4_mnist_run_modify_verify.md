@@ -1,4 +1,4 @@
-# 4_mnist_run_modify_verify
+# 4. mnist_run_modify_verify
 ## 1. 今日目标
 
 从“能读懂代码”进一步过渡到：
