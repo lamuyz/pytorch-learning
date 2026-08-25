@@ -606,3 +606,609 @@ loss = F.nll_loss(output, target)
 loss.backward()
 optimizer.step()
 ```
+
+## 15. CNN core concepts
+
+前面的内容主要介绍了 MNIST CNN 的执行流程：
+
+```text
+Dataset
+↓
+DataLoader
+↓
+model(data)
+↓
+forward()
+↓
+loss
+↓
+backward()
+↓
+optimizer.step()
+````
+
+这一部分进一步理解 CNN 中几个核心概念：
+
+- kernel / filter
+    
+- feature map
+    
+- channel
+    
+- feature hierarchy
+    
+- ReLU
+    
+- pooling
+    
+- Flatten
+
+---
+
+### 15.1 Kernel / Filter（卷积核）
+
+CNN中的：
+
+- kernel
+    
+- filter
+    
+- 卷积核
+    
+
+通常表示同一个概念。
+
+卷积核是一个小矩阵，例如：
+
+```text
+3×3 kernel
+```
+
+它会在输入图片上滑动，并进行局部计算。
+
+注意：
+
+一个窗口（window）不是一个kernel。
+
+关系：
+
+```text
+一个kernel
+
+↓
+
+扫描不同位置的window
+
+↓
+
+生成一个feature map
+```
+
+---
+
+### 15.2 一个kernel如何产生feature map？
+
+假设：
+
+输入图片：
+
+```text
+28×28
+```
+
+一个kernel：
+
+```text
+3×3
+```
+
+kernel每次观察：
+
+```text
+3×3局部区域
+```
+
+然后：
+
+```text
+对应元素相乘
+
++
+
+求和
+```
+
+得到一个数字。
+
+kernel移动到不同位置：
+
+会得到很多数字。
+
+这些数字组成：
+
+```text
+feature map
+```
+
+例如，输入：
+
+```text
+28×28
+```
+
+经过：
+
+```text
+3×3 kernel
+```
+
+输出：
+
+```text
+26×26 feature map
+```
+
+feature map表示：
+
+> 某个kernel在图片不同位置上的响应。
+
+---
+
+### 15.3 为什么多个kernel产生多个feature map？
+
+例如：
+
+```python
+nn.Conv2d(
+    in_channels=1,
+    out_channels=16,
+    kernel_size=3
+)
+```
+
+其中：
+
+```text
+out_channels=16
+```
+
+表示：
+
+使用16个不同的kernel。
+
+关系：
+
+```text
+16个kernel
+
+↓
+
+16个feature map
+
+↓
+
+16个output channels
+```
+
+每个kernel可以学习不同的模式。
+
+例如：
+
+```text
+channel 1:
+边缘
+
+channel 2:
+纹理
+
+channel 3:
+亮度变化
+
+channel 4:
+形状
+```
+
+因此：
+
+channel数量本质上来自：
+
+> 卷积核数量。
+
+---
+
+### 15.4 Feature map是什么？
+
+> 特征图
+
+表示：
+
+某个kernel在输入图片不同位置上的响应。
+
+feature map中的数值：
+
+表示：
+
+该位置是否具有该kernel寻找的feature。
+
+例如：
+
+一个kernel学习寻找边缘：
+
+如果某个位置存在类似边缘结构：
+
+那么该位置输出值会较大。
+
+---
+
+### 15.5 CNN中的feature hierarchy（特征层级）
+
+CNN不是每一层都直接读取原始图片。
+
+数据流：
+
+```text
+pixel
+
+↓
+
+浅层feature
+
+↓
+
+中层feature
+
+↓
+
+深层feature
+```
+
+---
+
+### 浅层feature
+
+更接近原始pixel。
+
+通常学习：
+
+- edge（边缘）
+    
+- texture（纹理）
+    
+- brightness change（亮度变化）
+    
+
+例如MNIST：
+
+```text
+简单线条
+```
+
+---
+
+### 深层feature
+
+来自前面feature的组合。
+
+通常学习：
+
+- shape（形状）
+    
+- structure（结构）
+    
+- semantic information（语义信息）
+    
+
+例如MNIST：
+
+```text
+整个数字结构
+```
+
+因此：
+
+浅层：
+
+```text
+空间细节
+```
+
+深层：
+
+```text
+高级语义
+```
+
+---
+
+### 15.6 ReLU activation
+
+ReLU：
+
+全称：
+
+> Rectified Linear Unit，修正线性单元
+
+公式：
+
+```text
+ReLU(x)=max(0,x)
+```
+
+例如：
+
+输入：
+
+```text
+[-2,3,-1]
+```
+
+输出：
+
+```text
+[0,3,0]
+```
+
+作用：
+
+加入非线性。
+
+如果没有ReLU：
+
+多个卷积层叠加仍然只能表示线性关系。
+
+因此：
+
+ReLU让CNN可以学习更复杂的feature。
+
+---
+
+### 15.7 Pooling
+
+> 池化
+
+作用：
+
+降低feature map空间尺寸。
+
+例如：
+
+```text
+24×24
+
+↓
+
+12×12
+```
+
+Max Pooling：
+
+```python
+nn.MaxPool2d(2)
+```
+
+会在局部区域中选择最大响应。
+
+例如：
+
+一个区域：
+
+```text
+[1,5]
+
+[2,3]
+```
+
+Max pooling：
+
+```text
+5
+```
+
+---
+
+Pooling保留：
+
+```text
+某个feature是否存在
+```
+
+但是会丢失：
+
+```text
+feature精确位置
+```
+
+因此：
+
+分类任务中可以接受；
+
+但是分割任务需要额外设计（例如skip connection）来恢复空间信息。
+
+---
+
+### 15.8 Flatten为什么连接CNN和Linear？
+
+CNN输出：
+
+```text
+batch × channel × height × width
+```
+
+例如：
+
+```text
+64×64×12×12
+```
+
+其中：
+
+第一个64：
+
+表示batch数量。
+
+对于单张图片：
+
+feature数量：
+
+```text
+64×12×12=9216
+```
+
+Flatten：
+
+把：
+
+```text
+channel × height × width
+```
+
+转换为：
+
+```text
+feature vector
+```
+
+例如：
+
+```text
+64×64×12×12
+
+↓
+
+64×9216
+```
+
+然后输入：
+
+```python
+nn.Linear(9216,128)
+```
+
+---
+
+### 15.9 CNN如何学习feature？
+
+卷积核中的参数不是人工设置的。
+
+训练过程：
+
+```text
+image
+
+↓
+
+forward
+
+↓
+
+prediction
+
+↓
+
+loss
+
+↓
+
+backpropagation
+
+↓
+
+更新kernel参数
+```
+
+经过大量训练：
+
+kernel逐渐学会：
+
+- 哪些边缘重要
+    
+- 哪些feature组合有意义
+    
+- 如何提高分类准确率
+    
+
+因此：
+
+训练好的CNN中：
+
+kernel已经包含学习到的feature detection能力。
+
+---
+
+### 15.10 CNN与U-Net的联系
+
+分类CNN：
+
+目标：
+
+```text
+图片是什么？
+```
+
+因此：
+
+最后：
+
+```text
+feature map
+
+↓
+
+Flatten
+
+↓
+
+Linear
+
+↓
+
+class
+```
+
+---
+
+分割CNN：
+
+目标：
+
+```text
+每个pixel是什么？
+```
+
+因此：
+
+需要保留：
+
+```text
+feature map的空间信息
+```
+
+U-Net：
+
+通过：
+
+```text
+Encoder
+
+↓
+
+Decoder
+
+↓
+
+Skip connection
+```
+
+重新结合：
+
+```text
+高级语义信息
+
++
+
+空间细节信息
+```
+
+因此：
+
+CNN中的feature extraction是U-Net分割的基础。

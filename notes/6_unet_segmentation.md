@@ -1,4 +1,4 @@
-# U-Net Segmentation
+# 6. U-Net Segmentation
 
 ## 1. 从分类CNN到图像分割
 
