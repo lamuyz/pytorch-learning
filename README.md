@@ -30,5 +30,8 @@ U-Net 与图像分割
     
 - [6. U-Net Segmentation](https://chatgpt.com/g/g-p-6a8ae7401a648191ad7b9835e9b6df4f-pytorch-learning/c/notes/6_unet_segmentation.md)
     
+- [7. U-Net Core Concepts](https://github.com/lamuyz/pytorch-learning/blob/main/notes/7_unet_core_concepts.md)
+    
+- [8. U-Net Repo Reading](https://github.com/lamuyz/pytorch-learning/blob/main/notes/8_unet_repo_reading.md)
 
 Work in progress.
